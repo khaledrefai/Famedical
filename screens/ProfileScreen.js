@@ -28,6 +28,7 @@ import {
 } from 'native-base';
 
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import {useTheme} from 'styled-components';
 
 const ProfileScreen = ({navigation, route}) => {
   const {user, logout} = useContext(AuthContext);
@@ -35,13 +36,18 @@ const ProfileScreen = ({navigation, route}) => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deleted, setDeleted] = useState(false);
-  const [userData, setUserData] = useState(null);
-  const [userID, setUserID] = useState(route.params.userId);
+  const [userData, setUserData] = useState(null); //login user or viewed user
+
+  const [userID, setUserID] = useState(
+    route.params ? route.params.userId : user.uid,
+  );
 
   const [relations, setRelations] = useState([]);
   const [relationOption, setRelationOption] = useState(null);
-  const [relativeStatus, setRelativeStatus] = useState(0);
+  const [relativeStatus, setRelativeStatus] = useState("NOT_FOUND");
   const [userRelatives, setUserRelatives] = useState([]);
+  const [loginUserData, setLoginUserData] = useState(null);
+
   const fetchRelation = async () => {
     try {
       const list = [];
@@ -56,6 +62,7 @@ const ProfileScreen = ({navigation, route}) => {
               key: doc.id,
               value: doc.id,
               label: name_ar,
+              labelrev: name_ar_rev,
             });
           });
         });
@@ -64,34 +71,59 @@ const ProfileScreen = ({navigation, route}) => {
         setLoading(false);
       }
       setRelations(list);
-      console.log('setRelations: ', relations);
+      console.log('setRelations: ', list);
     } catch (e) {
       console.log(e);
     }
   };
 
   const saveFamilyMember = () => {
-    console.log('saveFamilyMember ---- 81');
+  console.log("lgin user --------- ",loginUserData)
+     //add relative request for user we viewing
     userData.relatives.push({
-      toUser: route.params.userId,
+      toUser: user.uid,
+      toUserName : loginUserData.fname + " "+ loginUserData.lname, 
+      toUserImg : loginUserData.userImg,
       relationId: relationOption,
+      relationName: relations.filter( x  =>  
+        x.key == relationOption 
+      )[0].labelrev,
       requestDate: new Date(),
-      status: 1,
+      status: "PENDING", //pending
     });
     updateRelStatus();
     console.log('saveFamilyMember ---- 89');
     firestore()
       .collection('users')
-      .doc(user.uid)
+      .doc(userID)
       .update({
         relatives: userData.relatives,
       })
       .then(() => {
-        console.log('User Updated!');
-        Alert.alert(
-          'Profile Updated!',
-          'Your profile has been updated successfully.',
-        );
+        console.log('User relatives Updated!');
+      });
+
+    //add relative request for current user - loged in
+    userRelatives.push({
+      toUser: userID,
+      toUserName : userData.fname + " "+ userData.lname, 
+      toUserImg : userData.userImg,
+      relationId: relationOption,
+      relationName: relations.filter( x =>
+        x.key == relationOption
+      )[0].label,
+      requestDate: new Date(),
+      status: "PENDING",//pending
+    });
+
+    firestore()
+      .collection('users')
+      .doc(user.uid)
+      .update({
+        relatives: userRelatives,
+      })
+      .then(() => {
+        console.log('logined in user relatives Updated!');
       });
   };
 
@@ -147,31 +179,34 @@ const ProfileScreen = ({navigation, route}) => {
       .get()
       .then((documentSnapshot) => {
         if (documentSnapshot.exists) {
-          console.log('User Data',  documentSnapshot.data());
-          setUserData( documentSnapshot.data());
+          console.log('User Data', documentSnapshot.data());
+          setUserData(documentSnapshot.data());
           //  setRelatives(documentSnapshot.data().relatives);
         }
       });
   };
-  const getUserRelatives = async () => {
+  const getLoginUserData = async () => {
     await firestore()
       .collection('users')
       .doc(user.uid)
       .get()
       .then((documentSnapshot) => {
         if (documentSnapshot.exists) {
-          if(documentSnapshot.data().relatives){
-          console.log('User relatives', documentSnapshot.data().relatives);
-          setUserRelatives(documentSnapshot.data().relatives);
-          let relat = documentSnapshot.data().relatives.find((x) => x.toUser.toString() == userID.toString());
-          console.log('relat   2222222', relat);
-          if (relat == null) {
-            setRelativeStatus(0);
-          } else {
-            setRelativeStatus(relat);
-          }  
-
-          }
+          setLoginUserData(documentSnapshot.data());
+          console.log('getLoginUserData Data', documentSnapshot.data());
+          // if (documentSnapshot.data().relatives) {
+          //   console.log('User relatives', documentSnapshot.data().relatives);
+          //   setUserRelatives(documentSnapshot.data().relatives);
+          //   let relat = documentSnapshot
+          //     .data()
+          //     .relatives.find((x) => x.toUser.toString() == userID.toString());
+          //   console.log('relat   2222222', relat);
+          //   if (relat == null) {
+          //     setRelativeStatus("NOT_FOUND");
+          //   } else {
+          //     setRelativeStatus(relat);
+          //   }
+          // }
           //  setRelatives(documentSnapshot.data().relatives);
         }
       });
@@ -179,10 +214,12 @@ const ProfileScreen = ({navigation, route}) => {
   const updateRelStatus = () => {
     console.log('update start');
     try {
-      if (userRelatives) {
-        console.log('user have relatives' , userRelatives);
-        console.log('  userData.id' , userID);
-        let relat = userRelatives.find((x) => x.toUser.toString() == userID.toString());
+      if (loginUserData.relatives) {
+        console.log('user have relatives', loginUserData.relatives);
+        console.log('  userData.id', userID);
+        let relat = loginUserData.relatives.find(
+          (x) => x.toUser.toString() == userID.toString(),
+        );
         console.log('relat   ', relat);
         if (relat == null) {
           setRelativeStatus(0);
@@ -196,9 +233,12 @@ const ProfileScreen = ({navigation, route}) => {
   };
   useEffect(() => {
     getUser();
-    getUserRelatives();
     fetchPosts();
+if(userID != user.id){
+    getLoginUserData();
     fetchRelation();
+    updateRelStatus();
+}
 
     navigation.addListener('focus', () => setLoading(!loading));
   }, [navigation, loading]);
@@ -232,11 +272,12 @@ const ProfileScreen = ({navigation, route}) => {
           {/* <Text>{route.params ? route.params.userId : user.uid}</Text> */}
           <Text style={styles.aboutUser}>
             {userData ? userData.about || 'No details added.' : ''}
+         
           </Text>
           <Divider />
 
           {route.params ? (
-            relativeStatus == 0 ? (
+            relativeStatus == "NOT_FOUND" ? (
               <Flex direction="row">
                 <TouchableOpacity
                   style={styles.userBtn}
@@ -262,7 +303,7 @@ const ProfileScreen = ({navigation, route}) => {
                   ))}
                 </Select>
               </Flex>
-            ) : relativeStatus == 2 ? (
+            ) : relativeStatus == "CONNECTED" ? (
               <View style={styles.userBtnWrapper}>
                 <TouchableOpacity style={styles.userBtn} onPress={() => {}}>
                   <Text style={styles.userBtnTxt}>حذف قريب</Text>

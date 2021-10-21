@@ -1,5 +1,7 @@
-import React from 'react';
-import { View, Text, Button, StyleSheet, FlatList } from 'react-native';
+import React, {useState, useEffect, useContext} from 'react';
+import {   ScrollView,  SafeAreaView,Image,
+  View,   Button, StyleSheet } from 'react-native';
+ 
 import {
   Container,
   Card,
@@ -16,7 +18,18 @@ import {
 import {AuthContext} from '../navigation/AuthProvider';
 
 import firestore from '@react-native-firebase/firestore';
-
+import {
+  Box,
+  FlatList,
+  Heading,
+  Avatar,
+  HStack,
+  VStack,
+  Text,
+  Spacer,
+  Center,
+  NativeBaseProvider,
+} from "native-base"
 const Messages = [
   {
     id: '1',
@@ -64,42 +77,69 @@ const FamilyScreen = ({navigation, route}) => {
 
     const {user, logout} = useContext(AuthContext);
     const[userData,setUserData] = useState(null);
-
+    const[familyReq,setFamilyReq] = useState(null);
+    const [loading, setLoading] = useState(true);
     const getUser = async() => {
         await firestore()
         .collection('users')
-        .doc( route.params ? route.params.userId : user.uid)
+        .doc(user.uid)
         .get()
         .then((documentSnapshot) => {
           if( documentSnapshot.exists ) {
             console.log('User Data', documentSnapshot.data());
             setUserData(documentSnapshot.data());
+            console.log('User relaive ',  documentSnapshot.data().relatives.filter( r => r.status != "PEDING")  );
+           
+            if (loading) {
+              setLoading(false);
+            }
           }
         })
       }
+
+
+      useEffect(() => {
+        getUser(); 
+        
+        navigation.addListener('focus', () => setLoading(!loading));
+      }, [navigation, loading]);
+
     return (
-      <Container>
+      <NativeBaseProvider>
+      <Center flex="1" >
+       <Container>
+      { loading ||  userData==null ? (
+       <Image
+       source={require('../assets/loading.gif')}
+      />
+      ):(
+        <React.Fragment>
+ 
         <FlatList 
-          data={Messages}
-          keyExtractor={item=>item.id}
+          data={userData.relatives.filter( r => r.status == "PENDING")  }
+          keyExtractor={item=>item.toUser}
           renderItem={({item}) => (
-            <Card onPress={() => navigation.navigate('Chat', {userName: item.userName})}>
+            <Card onPress={() => navigation.navigate('HomeProfile', {   userId: item.toUser })}>
               <UserInfo>
                 <UserImgWrapper>
-                  <UserImg source={item.userImg} />
+                  <UserImg source={item.toUserImg?item.toUserImg :require('../assets/avatar.jpg')} />
                 </UserImgWrapper>
                 <TextSection>
                   <UserInfoText>
-                    <UserName>{item.userName}</UserName>
-                    <PostTime>{item.messageTime}</PostTime>
+                    <UserName>{item.toUserName}</UserName>
+                    <PostTime>{item.relationName}</PostTime>
                   </UserInfoText>
-                  <MessageText>{item.messageText}</MessageText>
+                  <MessageText></MessageText>
                 </TextSection>
               </UserInfo>
             </Card>
           )}
         />
-      </Container>
+        </React.Fragment>
+        )}
+      </Container> 
+      </Center>
+      </NativeBaseProvider>
     );
 };
 

@@ -12,7 +12,7 @@ import ProfileScreen from '../screens/ProfileScreen';
 import AddPostScreen from '../screens/AddPostScreen';
 import MessagesScreen from '../screens/MessagesScreen';
 import EditProfileScreen from '../screens/EditProfileScreen';
-
+import FamilyScreen from '../screens/FamilyScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -143,17 +143,12 @@ const PostStack = ({navigation}) => (
 );
 
 
-const MessageStack = ({navigation}) => (
+const FamilyStack = ({navigation}) => (
   <Stack.Navigator>
-    <Stack.Screen name="Messages" component={MessagesScreen} />
-    <Stack.Screen
-      name="Chat"
-      component={ChatScreen}
-      options={({route}) => ({
-        title: route.params.userName,
-        headerBackTitleVisible: false,
-      })}
-    />
+    <Stack.Screen name="Family" component={FamilyScreen}  options={{
+        headerShown: false,
+      }}/>
+    
   </Stack.Navigator>
 );
 
@@ -220,6 +215,17 @@ const AppStack = () => {
           ),
         })}
       />
+        <Tab.Screen
+        name=" العائلة  "
+        component={FamilyStack}
+        options={{
+          // tabBarLabel: 'Home',
+          tabBarIcon: ({color, size}) => (
+            <Ionicons name="people-circle-outline" color={color} size={size} />
+          ),
+        }}
+      />
+
       <Tab.Screen
         name="ملفي الشخصي"
         component={ProfileStack}
