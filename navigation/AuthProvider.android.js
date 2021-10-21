@@ -33,23 +33,22 @@ export const AuthProvider = ({children}) => {
             await auth().signInWithCredential(googleCredential)
             // Use it only when user Sign's up, 
             // so create different social signup function
-            // .then(() => {
-            //   //Once the user creation has happened successfully, we can add the currentUser into firestore
-            //   //with the appropriate details.
-            //   // console.log('current User', auth().currentUser);
-            //   firestore().collection('users').doc(auth().currentUser.uid)
-            //   .set({
-            //       fname: '',
-            //       lname: '',
-            //       email: auth().currentUser.email,
-            //       createdAt: firestore.Timestamp.fromDate(new Date()),
-            //       userImg: null,
-            //   })
-            //   //ensure we catch any errors at this stage to advise us if something does go wrong
-            //   .catch(error => {
-            //       console.log('Something went wrong with added user to firestore: ', error);
-            //   })
-            // })
+            .then(() => {
+              //Once the user creation has happened successfully, we can add the currentUser into firestore
+              //with the appropriate details.
+              // console.log('current User', auth().currentUser);
+              firestore().collection('users').doc(auth().currentUser.uid)
+              .set({
+                  email: auth().currentUser.email,
+                  createdAt: createdAt=null?firestore.Timestamp.fromDate(new Date()):createdAt,
+                  userImg: null,
+                  relatives:[],
+              },{merge:true})
+              //ensure we catch any errors at this stage to advise us if something does go wrong
+              .catch(error => {
+                  console.log('Something went wrong with added user to firestore: ', error);
+              })
+            })
             //we need to catch the whole sign up process if it fails too.
             .catch(error => {
                 console.log('Something went wrong with sign up: ', error);
@@ -119,7 +118,7 @@ export const AuthProvider = ({children}) => {
                   email: email,
                   createdAt: firestore.Timestamp.fromDate(new Date()),
                   userImg: null,
-              })
+              } )
               //ensure we catch any errors at this stage to advise us if something does go wrong
               .catch(error => {
                   console.log('Something went wrong with added user to firestore: ', error);

@@ -1,11 +1,11 @@
-import React, {useState, useContext} from 'react';
+import React, {useState, useContext , useEffect} from 'react';
 import {
   View,
   Text,
   Platform,
   StyleSheet,
   Alert,
-  ActivityIndicator,
+  ActivityIndicator,Dimensions,
 } from 'react-native';
 import ActionButton from 'react-native-action-button';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -13,6 +13,8 @@ import ImagePicker from 'react-native-image-crop-picker';
 
 import storage from '@react-native-firebase/storage';
 import firestore from '@react-native-firebase/firestore';
+import DropDownPicker from 'react-native-dropdown-picker';
+ 
 
 import {
   InputField,
@@ -24,15 +26,110 @@ import {
 } from '../styles/AddPost';
 
 import { AuthContext } from '../navigation/AuthProvider';
+import DatePicker from 'react-native-date-picker'
 
-const AddPostScreen = () => {
+const AddPostScreen = ({navigation,route,state}) => {
+
+  let postParam= null;
+  try{
+      postParam=  route.params.paramKey ;
+    console.log(postParam);
+  }catch(er){
+    console.log(er);
+  }
   const {user, logout} = useContext(AuthContext);
+  const [open, setOpen] = useState(false);
 
-  const [image, setImage] = useState(null);
+  const [image, setImage] = useState(postParam?postParam.postImg:null);
   const [uploading, setUploading] = useState(false);
   const [transferred, setTransferred] = useState(0);
-  const [post, setPost] = useState(null);
+  const [post, setPost] = useState(postParam);
+  const [diseases, setDiseases] = useState([]);
+  const [loading, setLoading] = useState(false);
+   const [date, setDate] = useState(postParam?new Date( postParam.diagnosisDate.toDate()): new Date());
+  const [diagnosis, setDiagnosis] = useState(postParam?postParam.diagnosis:null);
+  const [disease , setDisease]= useState(postParam?postParam.diagnosis.value:null);
+ //console.log("post",post);
 
+ /* const getPost = async() => {
+    await firestore()
+    .collection('posts')
+    .doc( postId)
+    .get()
+    .then((documentSnapshot) => {
+      if( documentSnapshot.exists ) {
+        console.log('doc  Data-------------',documentSnapshot.data());
+           setPost(documentSnapshot.data());
+         
+        console.log('post  Data-------------',post);
+           setImage(documentSnapshot.data().postImg);
+           setDiagnosis(diseases[documentSnapshot.data().diagnosisId]);
+          setDate( new Date(documentSnapshot.data().diagnosisDate.toDate()));
+   
+       
+       }else{
+         console.log("no post >>>>>")
+       }
+    })
+  }*/
+  
+ 
+
+  const fetchDiseases = async () => {
+    try {
+   const list = [];
+         setLoading(true);
+       await firestore()
+        .collection('disease')
+        .get()
+        .then((querySnapshot) => {
+     console.log('Total Posts: ', querySnapshot.size);
+
+          querySnapshot.forEach((doc) => {
+            const {
+              name_ar,
+              name_en, 
+            } = doc.data();
+
+            list.push({
+              value : doc.id,
+              label : name_ar +' - ' +name_en,
+                
+            });
+
+ 
+          });
+        });
+
+   setDiseases(list);
+ 
+      console.log('Disease : ',  diseases );
+      setLoading(false)
+    } catch (e) {
+      console.log(e);
+    }
+  };
+  useEffect(() => {
+    setLoading(true)
+    setPost(postParam);
+    fetchDiseases();
+     navigation.addListener("focus", () => setLoading(!loading));
+   },[]);
+
+ const updateDiagnosisLabel = (value) =>{
+   try{
+    console.log( "  121 ----- value " + value);
+    console.log( "  122 ----- ffff " + diseases.find(x=> x.value== value).label);
+
+   setDiagnosis(diseases.find(x=> x.value== value));
+  console.log( "  124 ----- diagnose " + diagnosis.label);
+   }catch(e){
+
+   }
+ }
+
+ 
+ 
   const takePhotoFromCamera = () => {
     ImagePicker.openCamera({
       width: 1200,
@@ -61,24 +158,23 @@ const AddPostScreen = () => {
     const imageUrl = await uploadImage();
     console.log('Image Url: ', imageUrl);
     console.log('Post: ', post);
-
+    console.log("diagnosis",diagnosis.label);
     firestore()
     .collection('posts')
-    .add({
+    .doc(post?post.id:null)
+    .set({
       userId: user.uid,
-      post: post,
-      postImg: imageUrl,
+      diagnosis: diagnosis,
+      postImg: imageUrl?imageUrl:post?post.postImg:null,
       postTime: firestore.Timestamp.fromDate(new Date()),
-      likes: null,
-      comments: null,
-    })
+      diagnosisDate : date,
+      },{merge : true})
     .then(() => {
       console.log('Post Added!');
       Alert.alert(
-        'Post published!',
-        'Your post has been published Successfully!',
+         'تم الحفظ',
       );
-      setPost(null);
+      navigation.navigate('HomeScreen');
     })
     .catch((error) => {
       console.log('Something went wrong with added post to firestore.', error);
@@ -138,16 +234,34 @@ const AddPostScreen = () => {
 
   return (
     <View style={styles.container}>
-      <InputWrapper>
-        {image != null ? <AddImage source={{uri: image}} /> : null}
+ 
 
-        <InputField
-          placeholder="What's on your mind?"
-          multiline
-          numberOfLines={4}
-          value={post}
-          onChangeText={(content) => setPost(content)}
-        />
+<Text style={styles.lable}>
+  تاريخ التشخيص
+  </Text>
+  <DatePicker date={ date} onDateChange={setDate} mode="date"/>
+  <Text style={styles.lable}> 
+  التشخيص
+  </Text >
+  <DropDownPicker
+   loading={loading}
+  placeholder="الرجاء اختيار التشخيص"
+  searchPlaceholder="اكتب هنا للبحث"
+  listMode="MODAL"
+  zIndex={50}
+   open={open}
+      value={disease}
+      items={diseases}
+      setOpen={setOpen}
+      setValue={setDisease}
+      setItems={setDiseases}
+      searchable={true}
+onChangeValue={(value) => {
+  updateDiagnosisLabel(value);
+}}  />
+            <View style={{width: 700, height: 250 ,marginTop:5 , marginBottom : 5}} >
+        {image != null ? <AddImage source={{uri: image}} />:null     }
+         </View>
         {uploading ? (
           <StatusWrapper>
             <Text>{transferred} % Completed!</Text>
@@ -158,8 +272,8 @@ const AddPostScreen = () => {
             <SubmitBtnText>Post</SubmitBtnText>
           </SubmitBtn>
         )}
-      </InputWrapper>
-      <ActionButton buttonColor="#2e64e5">
+ 
+      <ActionButton buttonColor="#2e64e5"  zIndex={2000} >
         <ActionButton.Item
           buttonColor="#9b59b6"
           title="Take Photo"
@@ -189,5 +303,12 @@ const styles = StyleSheet.create({
     fontSize: 20,
     height: 22,
     color: 'white',
+    zIndex:200,
+  },
+  lable: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginTop: 10,
+    marginBottom: 10,
   },
 });

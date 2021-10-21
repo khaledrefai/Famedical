@@ -83,6 +83,13 @@ const Posts = [
 ];
 
 const HomeScreen = ({navigation}) => {
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      fetchPosts();
+    console.log('refreshed');
+    });
+    return unsubscribe;
+  }, [navigation]);
   const [posts, setPosts] = useState(null);
   const [loading, setLoading] = useState(true);
   const [deleted, setDeleted] = useState(false);
@@ -101,12 +108,11 @@ const HomeScreen = ({navigation}) => {
           querySnapshot.forEach((doc) => {
             const {
               userId,
-              post,
+              diagnosis,
               postImg,
               postTime,
-              likes,
-              comments,
-            } = doc.data();
+              diagnosisDate,
+             } = doc.data();
             list.push({
               id: doc.id,
               userId,
@@ -114,12 +120,10 @@ const HomeScreen = ({navigation}) => {
               userImg:
                 'https://lh5.googleusercontent.com/-b0PKyNuQv5s/AAAAAAAAAAI/AAAAAAAAAAA/AMZuuclxAM4M1SCBGAO7Rp-QP6zgBEUkOQ/s96-c/photo.jpg',
               postTime: postTime,
-              post,
+              diagnosis,
               postImg,
-              liked: false,
-              likes,
-              comments,
-            });
+               diagnosisDate: diagnosisDate,
+             });
           });
         });
 
@@ -134,28 +138,25 @@ const HomeScreen = ({navigation}) => {
       console.log(e);
     }
   };
-
-  useEffect(() => {
-    fetchPosts();
-  }, []);
+ 
 
   useEffect(() => {
     fetchPosts();
     setDeleted(false);
   }, [deleted]);
-
+ 
   const handleDelete = (postId) => {
     Alert.alert(
-      'Delete post',
-      'Are you sure?',
+      'حذف التشخيص',
+      'هل انت متأكد ؟',
       [
         {
-          text: 'Cancel',
+          text: 'الغاء',
           onPress: () => console.log('Cancel Pressed!'),
           style: 'cancel',
         },
         {
-          text: 'Confirm',
+          text: 'تأكيد',
           onPress: () => deletePost(postId),
         },
       ],
@@ -202,8 +203,7 @@ const HomeScreen = ({navigation}) => {
       .delete()
       .then(() => {
         Alert.alert(
-          'Post deleted!',
-          'Your post has been deleted successfully!',
+           'تم حذف التشخيص بنجاح',
         );
         setDeleted(true);
       })
@@ -261,24 +261,12 @@ const HomeScreen = ({navigation}) => {
           </SkeletonPlaceholder>
         </ScrollView>
       ) : (
-        <Container>
-          <FlatList
-            data={posts}
-            renderItem={({item}) => (
-              <PostCard
-                item={item}
-                onDelete={handleDelete}
-                onPress={() =>
-                  navigation.navigate('HomeProfile', {userId: item.userId})
-                }
-              />
-            )}
-            keyExtractor={(item) => item.id}
-            ListHeaderComponent={ListHeader}
-            ListFooterComponent={ListHeader}
-            showsVerticalScrollIndicator={false}
-          />
-        </Container>
+        <ScrollView>
+             {posts.map((item) => (
+          <PostCard key={item.id} item={item} onDelete={handleDelete}  navigation={navigation}  />
+        ))}
+       
+        </ScrollView>
       )}
     </SafeAreaView>
   );

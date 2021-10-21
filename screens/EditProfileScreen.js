@@ -23,6 +23,7 @@ import {AuthContext} from '../navigation/AuthProvider';
 import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
 
+
 const EditProfileScreen = () => {
   const {user, logout} = useContext(AuthContext);
   const [image, setImage] = useState(null);
@@ -41,6 +42,7 @@ const EditProfileScreen = () => {
         setUserData(documentSnapshot.data());
       }
     })
+    console.log('getser',user.uid);
   }
 
   const handleUpdate = async() => {

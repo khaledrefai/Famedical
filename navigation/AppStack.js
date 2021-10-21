@@ -13,20 +13,24 @@ import AddPostScreen from '../screens/AddPostScreen';
 import MessagesScreen from '../screens/MessagesScreen';
 import EditProfileScreen from '../screens/EditProfileScreen';
 
+
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
 const FeedStack = ({navigation}) => (
   <Stack.Navigator>
     <Stack.Screen
-      name="RN Social"
+      name="HomeScreen"
       component={HomeScreen}
       options={{
+        headerShown: false,
+        title: 'Family Medical Hidtory' ,
         headerTitleAlign: 'center',
         headerTitleStyle: {
           color: '#2e64e5',
           fontFamily: 'Kufam-SemiBoldItalic',
           fontSize: 18,
+         
         },
         headerStyle: {
           shadowColor: '#fff',
@@ -35,7 +39,7 @@ const FeedStack = ({navigation}) => (
         headerRight: () => (
           <View style={{marginRight: 10}}>
             <FontAwesome5.Button
-              name="plus"
+              name="filter"
               size={22}
               backgroundColor="#fff"
               color="#2e64e5"
@@ -45,16 +49,19 @@ const FeedStack = ({navigation}) => (
         ),
       }}
     />
-    <Stack.Screen
+ 
+ <Stack.Screen
       name="AddPost"
       component={AddPostScreen}
       options={{
-        title: '',
+        headerShown: false,
+        title: 'اضافة تشخيص',
         headerTitleAlign: 'center',
-        headerStyle: {
-          backgroundColor: '#2e64e515',
-          shadowColor: '#2e64e515',
-          elevation: 0,
+        headerTitleStyle: {
+          color: '#2e64e5',
+          fontFamily: 'Kufam-SemiBoldItalic',
+          fontSize: 18,
+         
         },
         headerBackTitleVisible: false,
         headerBackImage: () => (
@@ -68,6 +75,7 @@ const FeedStack = ({navigation}) => (
       name="HomeProfile"
       component={ProfileScreen}
       options={{
+        headerShown: false,
         title: '',
         headerTitleAlign: 'center',
         headerStyle: {
@@ -83,8 +91,57 @@ const FeedStack = ({navigation}) => (
         ),
       }}
     />
+
+<Stack.Screen
+      name="EditProfile"
+      component={EditProfileScreen}
+      options={{
+        headerShown: false,
+        title: '',
+        headerTitleAlign: 'center',
+        headerStyle: {
+          backgroundColor: '#fff',
+          shadowColor: '#fff',
+          elevation: 0,
+        },
+        headerBackTitleVisible: false,
+        headerBackImage: () => (
+          <View style={{marginLeft: 15}}>
+            <Ionicons name="arrow-back" size={25} color="#2e64e5" />
+          </View>
+        ),
+      }}
+    />
+
   </Stack.Navigator>
 );
+
+const PostStack = ({navigation}) => (
+  <Stack.Navigator>
+       <Stack.Screen
+      name="AddPost"
+      component={AddPostScreen}
+      options={{
+        headerShown: false,
+        title: 'اضافة تشخيص',
+        headerTitleAlign: 'center',
+        headerTitleStyle: {
+          color: '#2e64e5',
+          fontFamily: 'Kufam-SemiBoldItalic',
+          fontSize: 18,
+         
+        },
+        headerBackTitleVisible: false,
+        headerBackImage: () => (
+          <View style={{marginLeft: 15}}>
+            <Ionicons name="arrow-back" size={25} color="#2e64e5" />
+          </View>
+        ),
+      }}
+    />
+  </Stack.Navigator>
+);
+
 
 const MessageStack = ({navigation}) => (
   <Stack.Navigator>
@@ -109,20 +166,7 @@ const ProfileStack = ({navigation}) => (
         headerShown: false,
       }}
     />
-    <Stack.Screen
-      name="EditProfile"
-      component={EditProfileScreen}
-      options={{
-        headerTitle: 'Edit Profile',
-        headerBackTitleVisible: false,
-        headerTitleAlign: 'center',
-        headerStyle: {
-          backgroundColor: '#fff',
-          shadowColor: '#fff',
-          elevation: 0,
-        },
-      }}
-    />
+  
   </Stack.Navigator>
 );
 
@@ -144,10 +188,10 @@ const AppStack = () => {
         activeTintColor: '#2e64e5',
       }}>
       <Tab.Screen
-        name="Home"
+        name="الرئيسية"
         component={FeedStack}
         options={({route}) => ({
-          tabBarLabel: 'Home',
+          tabBarLabel: 'الرئيسية',
           // tabBarVisible: route.state && route.state.index === 0,
           tabBarIcon: ({color, size}) => (
             <MaterialCommunityIcons
@@ -159,8 +203,8 @@ const AppStack = () => {
         })}
       />
       <Tab.Screen
-        name="Messages"
-        component={MessageStack}
+        name="اضافة تشخيص"
+        component={PostStack}
         options={({route}) => ({
           tabBarVisible: getTabBarVisibility(route),
           // Or Hide tabbar when push!
@@ -169,7 +213,7 @@ const AppStack = () => {
           // tabBarLabel: 'Home',
           tabBarIcon: ({color, size}) => (
             <Ionicons
-              name="chatbox-ellipses-outline"
+              name="add-circle-outline"
               color={color}
               size={size}
             />
@@ -177,7 +221,7 @@ const AppStack = () => {
         })}
       />
       <Tab.Screen
-        name="Profile"
+        name="ملفي الشخصي"
         component={ProfileStack}
         options={{
           // tabBarLabel: 'Home',

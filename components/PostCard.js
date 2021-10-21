@@ -25,29 +25,10 @@ import moment from 'moment';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import firestore from '@react-native-firebase/firestore';
 
-const PostCard = ({item, onDelete, onPress}) => {
+const PostCard = ({ navigation, item, onDelete, onPress}) => {
   const {user, logout} = useContext(AuthContext);
   const [userData, setUserData] = useState(null);
-
-  likeIcon = item.liked ? 'heart' : 'heart-outline';
-  likeIconColor = item.liked ? '#2e64e5' : '#333';
-
-  if (item.likes == 1) {
-    likeText = '1 Like';
-  } else if (item.likes > 1) {
-    likeText = item.likes + ' Likes';
-  } else {
-    likeText = 'Like';
-  }
-
-  if (item.comments == 1) {
-    commentText = '1 Comment';
-  } else if (item.comments > 1) {
-    commentText = item.comments + ' Comments';
-  } else {
-    commentText = 'Comment';
-  }
-
+ 
   const getUser = async () => {
     await firestore()
       .collection('users')
@@ -77,17 +58,21 @@ const PostCard = ({item, onDelete, onPress}) => {
           }}
         />
         <UserInfoText>
-          <TouchableOpacity onPress={onPress}>
+          <TouchableOpacity   onPress={() => {
+                  navigation.navigate('HomeProfile',{
+                      userId: item.userId 
+                  });
+                }}>
             <UserName>
-              {userData ? userData.fname || 'Test' : 'Test'}{' '}
-              {userData ? userData.lname || 'User' : 'User'}
+              {userData ? userData.fname || 'No Data' : 'no Data'}{' '}
+              {userData ? userData.lname || 'No Data' : 'no Data'}
             </UserName>
           </TouchableOpacity>
-          <PostTime>{moment(item.postTime.toDate()).fromNow()}</PostTime>
+          <PostTime>{moment(item.diagnosisDate.toDate()).fromNow()}</PostTime>
         </UserInfoText>
       </UserInfo>
-      <PostText>{item.post}</PostText>
-      {/* {item.postImg != null ? <PostImg source={{uri: item.postImg}} /> : <Divider />} */}
+      <PostText>  {item.diagnosis.label} </PostText>
+       {/* {item.postImg != null ? <PostImg source={{uri: item.postImg}} /> : <Divider />} */}
       {item.postImg != null ? (
         <ProgressiveImage
           defaultImageSource={require('../assets/default-img.jpg')}
@@ -98,22 +83,26 @@ const PostCard = ({item, onDelete, onPress}) => {
       ) : (
         <Divider />
       )}
-
+   {user.uid == item.userId ? (
       <InteractionWrapper>
-        <Interaction active={item.liked}>
-          <Ionicons name={likeIcon} size={25} color={likeIconColor} />
-          <InteractionText active={item.liked}>{likeText}</InteractionText>
+        <Interaction   onPress={() => {
+                  navigation.navigate('AddPost',{
+                    paramKey: item,
+                    
+                  });
+                }}>
+          <Ionicons name="create-outline" size={25} color="#333" />
+          <InteractionText>تعديل</InteractionText>
         </Interaction>
-        <Interaction>
-          <Ionicons name="md-chatbubble-outline" size={25} />
-          <InteractionText>{commentText}</InteractionText>
-        </Interaction>
-        {user.uid == item.userId ? (
+       
+     
           <Interaction onPress={() => onDelete(item.id)}>
             <Ionicons name="md-trash-bin" size={25} />
+            <InteractionText>حذف</InteractionText>
           </Interaction>
-        ) : null}
+     
       </InteractionWrapper>
+         ) : null}
     </Card>
   );
 };
