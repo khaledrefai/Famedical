@@ -1,7 +1,15 @@
 import React, {useState, useEffect, useContext} from 'react';
-import {   ScrollView,  SafeAreaView,Image,
-  View,   Button, StyleSheet } from 'react-native';
- 
+import {
+  TouchableOpacity,
+  ScrollView,
+  SafeAreaView,
+  Image,
+  View,
+  Button,
+  StyleSheet,
+} from 'react-native';
+import moment from 'moment';
+
 import {
   Container,
   Card,
@@ -29,7 +37,8 @@ import {
   Spacer,
   Center,
   NativeBaseProvider,
-} from "native-base"
+} from 'native-base';
+import styles from '../styles/Common';
 const Messages = [
   {
     id: '1',
@@ -74,81 +83,160 @@ const Messages = [
 ];
 
 const FamilyScreen = ({navigation, route}) => {
+  const {user, logout} = useContext(AuthContext);
+  const [userData, setUserData] = useState(null);
+  const [familyReq, setFamilyReq] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const getUser = async () => {
+    await firestore()
+      .collection('users')
+      .doc(user.uid)
+      .get()
+      .then((documentSnapshot) => {
+        if (documentSnapshot.exists) {
+          console.log('User Data', documentSnapshot.data());
+          setUserData(documentSnapshot.data());
+          console.log(
+            'User relaive ',
+            documentSnapshot
+              .data()
+              .relatives.filter((r) => r.status != 'PEDING'),
+          );
 
-    const {user, logout} = useContext(AuthContext);
-    const[userData,setUserData] = useState(null);
-    const[familyReq,setFamilyReq] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const getUser = async() => {
-        await firestore()
-        .collection('users')
-        .doc(user.uid)
-        .get()
-        .then((documentSnapshot) => {
-          if( documentSnapshot.exists ) {
-            console.log('User Data', documentSnapshot.data());
-            setUserData(documentSnapshot.data());
-            console.log('User relaive ',  documentSnapshot.data().relatives.filter( r => r.status != "PEDING")  );
-           
-            if (loading) {
-              setLoading(false);
-            }
+          if (loading) {
+            setLoading(false);
           }
-        })
-      }
+        }
+      });
+  };
 
+  useEffect(() => {
+    getUser();
 
-      useEffect(() => {
-        getUser(); 
-        
-        navigation.addListener('focus', () => setLoading(!loading));
-      }, [navigation, loading]);
+    navigation.addListener('focus', () => setLoading(!loading));
+  }, [navigation, loading]);
 
-    return (
-      <NativeBaseProvider>
-      <Center flex="1" >
-       <Container>
-      { loading ||  userData==null ? (
-       <Image
-       source={require('../assets/loading.gif')}
-      />
-      ):(
-        <React.Fragment>
- 
-        <FlatList 
-          data={userData.relatives.filter( r => r.status == "PENDING")  }
-          keyExtractor={item=>item.toUser}
-          renderItem={({item}) => (
-            <Card onPress={() => navigation.navigate('HomeProfile', {   userId: item.toUser })}>
-              <UserInfo>
-                <UserImgWrapper>
-                  <UserImg source={item.toUserImg?item.toUserImg :require('../assets/avatar.jpg')} />
-                </UserImgWrapper>
-                <TextSection>
-                  <UserInfoText>
-                    <UserName>{item.toUserName}</UserName>
-                    <PostTime>{item.relationName}</PostTime>
-                  </UserInfoText>
-                  <MessageText></MessageText>
-                </TextSection>
-              </UserInfo>
-            </Card>
-          )}
-        />
-        </React.Fragment>
+  return (
+    <NativeBaseProvider>
+      <Center flex={1} px="3">
+        {loading || userData == null ? (
+          <Image source={require('../assets/loading.gif')} />
+        ) : (
+          <React.Fragment>
+            <FlatList
+              data={userData.relatives.filter((r) => r.status == 'PENDING')}
+              keyExtractor={(item) => item.toUser}
+              renderItem={({item}) => (
+                <Card
+                  onPress={() =>
+                    navigation.navigate('HomeProfile', {userId: item.toUser})
+                  }>
+                  <UserInfo>
+                    <UserImgWrapper>
+                      <UserImg
+                        source={
+                          item.toUserImg
+                            ? item.toUserImg
+                            : require('../assets/avatar.png')
+                        }
+                      />
+                    </UserImgWrapper>
+                    <TextSection>
+                      <UserInfoText>
+                        <UserName>{item.toUserName}</UserName>
+                        <PostTime>{item.relationName}</PostTime>
+                      </UserInfoText>
+                      <MessageText>
+                        <View style={styles.userBtnWrapper}>
+                          <TouchableOpacity
+                            style={styles.userBtn}
+                            onPress={() => acceptReq(item.toUser)}>
+                            <Text style={styles.userBtnTxt}>  قبول الطلب  </Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            style={styles.userBtn}
+                            onPress={() => rejectReq(item.toUser)}>
+                            <Text style={styles.userBtnTxt}>     رفض وحذف  </Text>
+                          </TouchableOpacity>
+                        </View>
+                      </MessageText>
+                    </TextSection>
+                  </UserInfo>
+                </Card>
+              )}
+            />
+            <FlatList
+              data={userData.relatives.filter((r) => r.status == 'REQ_SENT')}
+              keyExtractor={(item) => item.toUser}
+              renderItem={({item}) => (
+                <Card
+                  onPress={() =>
+                    navigation.navigate('HomeProfile', {userId: item.toUser})
+                  }>
+                  <UserInfo>
+                    <UserImgWrapper>
+                      <UserImg
+                        source={
+                          item.toUserImg
+                            ? item.toUserImg
+                            : require('../assets/avatar.png')
+                        }
+                      />
+                    </UserImgWrapper>
+                    <TextSection>
+                      <UserInfoText>
+                        <UserName>{item.toUserName}</UserName>
+                        <PostTime>{item.relationName}</PostTime>
+                      </UserInfoText>
+                        <MessageText>
+                      <Text>   تم ارسال الطلب   
+                         -     
+                      { moment(item.requestDate.toDate()).fromNow() } 
+                      </Text>
+                      </MessageText>
+                    </TextSection>
+                  </UserInfo>
+                </Card>
+              )}
+            />
+
+            <FlatList
+              data={userData.relatives.filter((r) => r.status == 'CONNECTED')}
+              keyExtractor={(item) => item.toUser}
+              renderItem={({item}) => (
+                <Card
+                  onPress={() =>
+                    navigation.navigate('HomeProfile', {userId: item.toUser})
+                  }>
+                  <UserInfo>
+                    <UserImgWrapper>
+                      <UserImg
+                        source={
+                          item.toUserImg
+                            ? item.toUserImg
+                            : require('../assets/avatar.png')
+                        }
+                      />
+                    </UserImgWrapper>
+                    <TextSection>
+                      <UserInfoText>
+                        <UserName>{item.toUserName}</UserName>
+                        <PostTime>{item.relationName}</PostTime>
+                      </UserInfoText>
+                          <Text>
+                          متصلون
+                           {moment(item.requestDate.toDate()).fromNow()}
+                          </Text>
+                     </TextSection>
+                  </UserInfo>
+                </Card>
+              )}
+            />
+          </React.Fragment>
         )}
-      </Container> 
       </Center>
-      </NativeBaseProvider>
-    );
+    </NativeBaseProvider>
+  );
 };
 
 export default FamilyScreen;
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1, 
-    alignItems: 'center', 
-    justifyContent: 'center'
-  },
-});

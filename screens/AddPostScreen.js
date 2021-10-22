@@ -234,8 +234,6 @@ const AddPostScreen = ({navigation,route,state}) => {
 
   return (
     <View style={styles.container}>
- 
-
 <Text style={styles.lable}>
   تاريخ التشخيص
   </Text>
