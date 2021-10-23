@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useContext} from 'react';
+import React, {useState, useEffect, useContext,forceUpdate} from 'react';
 import {
   View,
   Text,
@@ -42,13 +42,28 @@ const ProfileScreen = ({navigation, route}) => {
   const [userID, setUserID] = useState(
     route.params ? route.params.userId : user.uid,
   );
-
+ 
   const [relations, setRelations] = useState([]);
   const [relationOption, setRelationOption] = useState(null);
   const [relativeStatus, setRelativeStatus] = useState("NOT_FOUND");
   const [userRelatives, setUserRelatives] = useState([]);
   const [loginUserData, setLoginUserData] = useState(null);
 
+ 
+
+  useEffect(() => {
+    console.log('userID-------------', userID);
+    console.log('user.id-------------', user.uid);
+if(userID != user.uid){
+    getLoginUserData();
+    fetchRelation(); 
+
+}  
+getUser();
+fetchPosts();
+ navigation.addListener('focus', () => setLoading(!loading));
+   }, [navigation, loading,relativeStatus]);
+ 
   const fetchRelation = async () => {
     try {
       const list = [];
@@ -101,6 +116,7 @@ const ProfileScreen = ({navigation, route}) => {
         relatives: userData.relatives,
       })
       .then(() => {
+        setUserData(userData);
         console.log('User relatives Updated!');
       });
 
@@ -124,6 +140,7 @@ const ProfileScreen = ({navigation, route}) => {
         relatives: userRelatives,
       })
       .then(() => {
+       setUserRelatives(userRelatives);
         console.log('logined in user relatives Updated!');
       });
   };
@@ -195,6 +212,7 @@ const ProfileScreen = ({navigation, route}) => {
         if (documentSnapshot.exists) {
           setLoginUserData(documentSnapshot.data());
           console.log('getLoginUserData Data', documentSnapshot.data());
+          updateRelStatus();
           // if (documentSnapshot.data().relatives) {
           //   console.log('User relatives', documentSnapshot.data().relatives);
           //   setUserRelatives(documentSnapshot.data().relatives);
@@ -231,21 +249,97 @@ const ProfileScreen = ({navigation, route}) => {
     } catch (er) {
       console.log('update status error ', er);
     }
-  };
-  useEffect(() => {
-    getUser();
-    fetchPosts();
-    console.log('userID-------------', userID);
-    console.log('user.id-------------', user.uid);
-     getLoginUserData();
-    fetchRelation();
-    updateRelStatus();
+   };
  
 
-    navigation.addListener('focus', () => setLoading(!loading));
-  }, [navigation, loading]);
-
   const handleDelete = () => {};
+
+  
+  const acceptReq = async (touser) =>{
+    console.log("try to accept user ",touser);
+    //update to user
+    await firestore()
+    .collection('users')
+    .doc(touser)
+    .get()
+    .then((documentSnapshot) => {
+      if (documentSnapshot.exists) {
+     let i =   documentSnapshot.data().relatives.findIndex(x => x.toUser == user.uid);
+      documentSnapshot.data().relatives[i].status="CONNECTED";
+     documentSnapshot.data().relatives[i].requestDate = new Date();
+     firestore()
+     .collection('users')
+     .doc(touser)
+     .update({
+       relatives: documentSnapshot.data().relatives,
+     })
+     .then(() => {
+       console.log('to User relatives Updated!');
+     });
+      }
+    });
+
+     //update current user
+   
+      let i =   userData.relatives.findIndex(x => x.toUser == touser);
+      userData.relatives[i].status="CONNECTED";
+      userData.relatives[i].requestDate = new Date();
+      firestore()
+      .collection('users')
+      .doc(user.uid)
+      .update({
+        relatives: userData.relatives,
+      })
+      .then(() => {
+        setUserData(userData);
+     
+        console.log('my User relatives Updated!');
+      });
+      
+
+  }
+  const rejectReq = async(touser)=>{
+    console.log("try to del user ",touser);
+    //update to user
+    await firestore()
+    .collection('users')
+    .doc(touser)
+    .get()
+    .then((documentSnapshot) => {
+      if (documentSnapshot.exists) {
+     let i =   documentSnapshot.data().relatives.findIndex(x => x.toUser == user.uid);
+      documentSnapshot.data().relatives.splice(i,1);
+     firestore()
+     .collection('users')
+     .doc(touser)
+     .update({
+       relatives: documentSnapshot.data().relatives,
+     })
+     .then(() => {
+       setUserRelatives(userRelatives);
+ 
+       console.log('to User relatives deleted !');
+     });
+      }
+    });
+
+     //update current user
+   
+      let i =   userData.relatives.findIndex(x => x.toUser == touser);
+       userData.relatives.splice(i,1);
+      firestore()
+      .collection('users')
+      .doc(user.uid)
+      .update({
+        relatives: userData.relatives,
+      })
+      .then(() => {
+        setUserData(userData);
+        setRelativeStatus("NOT_FOUND");
+        console.log('my User relatives deleted!');
+      });
+        
+  }
 
   return (
     <NativeBaseProvider>
@@ -284,7 +378,7 @@ const ProfileScreen = ({navigation, route}) => {
            </Text>
           <Divider />
 
-          {route.params ? (
+          {userID != user.uid ? (
             relativeStatus == "NOT_FOUND" ? (
               <Flex direction="row">
                 <TouchableOpacity
@@ -303,23 +397,40 @@ const ProfileScreen = ({navigation, route}) => {
                   }}
                   mt={1}
                   onValueChange={(itemValue) => setRelationOption(itemValue)}>
-                  {relations.map((relation) => (
+                    {relations && relations.length > 0 ?(
+                  relations.map((relation) => (
                     <Select.Item
                       label={relation.label}
                       value={relation.value}
                     />
-                  ))}
+                  )) ) :(<Select.Item label="please wait" /> )}
                 </Select>
               </Flex>
             ) : relativeStatus == "CONNECTED" ? (
               <View style={styles.userBtnWrapper}>
-                <TouchableOpacity style={styles.userBtn} onPress={() => {}}>
+                <TouchableOpacity style={styles.userBtn} onPress={() =>  rejectReq(userID)}>
                   <Text style={styles.userBtnTxt}>حذف قريب</Text>
                 </TouchableOpacity>
               </View>
             ) : (
-              /*pendig*/
+               relativeStatus == "REQ_SENT" ? (
               <Text style={styles.userBtnTxt}> بانتظار الموافقة</Text>
+              ):
+              relativeStatus == "PENDING" ?(
+                <View style={styles.userBtnWrapper}>
+                <TouchableOpacity
+                  style={styles.userBtn}
+                  onPress={() => acceptReq(userID)}>
+                  <Text style={styles.userBtnTxt}>  قبول الطلب  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.userBtn}
+                  onPress={() => rejectReq(userID)}>
+                  <Text style={styles.userBtnTxt}>     رفض وحذف  </Text>
+                </TouchableOpacity>
+              </View>
+              ) :
+              (<Text>{relativeStatus}</Text>)
             )
           ) : (
             <View style={styles.userBtnWrapper}>

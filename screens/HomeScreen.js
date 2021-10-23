@@ -83,6 +83,7 @@ const Posts = [
 ];
 
 const HomeScreen = ({navigation}) => {
+
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       fetchPosts();

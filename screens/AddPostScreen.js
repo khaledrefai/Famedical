@@ -104,8 +104,7 @@ const AddPostScreen = ({navigation,route,state}) => {
    setDiseases(list);
  
       console.log('Disease : ',  diseases );
-      setLoading(false)
-    } catch (e) {
+     } catch (e) {
       console.log(e);
     }
   };

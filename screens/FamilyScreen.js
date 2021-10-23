@@ -8,8 +8,7 @@ import {
   Button,
   StyleSheet,
 } from 'react-native';
-import moment from 'moment';
-
+import moment from 'moment/min/moment-with-locales';
 import {
   Container,
   Card,
@@ -39,54 +38,97 @@ import {
   NativeBaseProvider,
 } from 'native-base';
 import styles from '../styles/Common';
-const Messages = [
-  {
-    id: '1',
-    userName: 'Jenny Doe',
-    userImg: require('../assets/users/user-3.jpg'),
-    messageTime: '4 mins ago',
-    messageText:
-      'Hey there, this is my test for a post of my social app in React Native.',
-  },
-  {
-    id: '2',
-    userName: 'John Doe',
-    userImg: require('../assets/users/user-1.jpg'),
-    messageTime: '2 hours ago',
-    messageText:
-      'Hey there, this is my test for a post of my social app in React Native.',
-  },
-  {
-    id: '3',
-    userName: 'Ken William',
-    userImg: require('../assets/users/user-4.jpg'),
-    messageTime: '1 hours ago',
-    messageText:
-      'Hey there, this is my test for a post of my social app in React Native.',
-  },
-  {
-    id: '4',
-    userName: 'Selina Paul',
-    userImg: require('../assets/users/user-6.jpg'),
-    messageTime: '1 day ago',
-    messageText:
-      'Hey there, this is my test for a post of my social app in React Native.',
-  },
-  {
-    id: '5',
-    userName: 'Christy Alex',
-    userImg: require('../assets/users/user-7.jpg'),
-    messageTime: '2 days ago',
-    messageText:
-      'Hey there, this is my test for a post of my social app in React Native.',
-  },
-];
+ 
 
 const FamilyScreen = ({navigation, route}) => {
+  moment.locale('ar');
+
   const {user, logout} = useContext(AuthContext);
   const [userData, setUserData] = useState(null);
   const [familyReq, setFamilyReq] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const acceptReq = async (touser) =>{
+    console.log("try to accept user ",touser);
+    //update to user
+    await firestore()
+    .collection('users')
+    .doc(touser)
+    .get()
+    .then((documentSnapshot) => {
+      if (documentSnapshot.exists) {
+     let i =   documentSnapshot.data().relatives.findIndex(x => x.toUser == user.uid);
+      documentSnapshot.data().relatives[i].status="CONNECTED";
+     documentSnapshot.data().relatives[i].requestDate = new Date();
+     firestore()
+     .collection('users')
+     .doc(touser)
+     .update({
+       relatives: documentSnapshot.data().relatives,
+     })
+     .then(() => {
+       console.log('to User relatives Updated!');
+     });
+      }
+    });
+
+     //update current user
+   
+      let i =   userData.relatives.findIndex(x => x.toUser == touser);
+      userData.relatives[i].status="CONNECTED";
+      userData.relatives[i].requestDate = new Date();
+      firestore()
+      .collection('users')
+      .doc(user.uid)
+      .update({
+        relatives: userData.relatives,
+      })
+      .then(() => {
+        setUserData(userData);
+        console.log('my User relatives Updated!');
+      });
+      
+
+  }
+  const rejectReq = async(touser)=>{
+    console.log("try to del user ",touser);
+    //update to user
+    await firestore()
+    .collection('users')
+    .doc(touser)
+    .get()
+    .then((documentSnapshot) => {
+      if (documentSnapshot.exists) {
+     let i =   documentSnapshot.data().relatives.findIndex(x => x.toUser == user.uid);
+      documentSnapshot.data().relatives.splice(i,1);
+     firestore()
+     .collection('users')
+     .doc(touser)
+     .update({
+       relatives: documentSnapshot.data().relatives,
+     })
+     .then(() => {
+       console.log('to User relatives deleted !');
+     });
+      }
+    });
+
+     //update current user
+   
+      let i =   userData.relatives.findIndex(x => x.toUser == touser);
+       userData.relatives.splice(i,1);
+      firestore()
+      .collection('users')
+      .doc(user.uid)
+      .update({
+        relatives: userData.relatives,
+      })
+      .then(() => {
+        setUserData(userData);
+        console.log('my User relatives deleted!');
+      });
+      
+  }
   const getUser = async () => {
     await firestore()
       .collection('users')
@@ -224,7 +266,9 @@ const FamilyScreen = ({navigation, route}) => {
                         <PostTime>{item.relationName}</PostTime>
                       </UserInfoText>
                           <Text>
+                        
                           متصلون
+                          -
                            {moment(item.requestDate.toDate()).fromNow()}
                           </Text>
                      </TextSection>

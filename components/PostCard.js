@@ -21,11 +21,13 @@ import ProgressiveImage from './ProgressiveImage';
 
 import {AuthContext} from '../navigation/AuthProvider';
 
-import moment from 'moment';
+import moment from 'moment/min/moment-with-locales';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import firestore from '@react-native-firebase/firestore';
 
 const PostCard = ({ navigation, item, onDelete, onPress}) => {
+  moment.locale('ar');
+
   const {user, logout} = useContext(AuthContext);
   const [userData, setUserData] = useState(null);
  
