@@ -213,20 +213,15 @@ fetchPosts();
           setLoginUserData(documentSnapshot.data());
           console.log('getLoginUserData Data', documentSnapshot.data());
           updateRelStatus();
-          // if (documentSnapshot.data().relatives) {
-          //   console.log('User relatives', documentSnapshot.data().relatives);
-          //   setUserRelatives(documentSnapshot.data().relatives);
-          //   let relat = documentSnapshot
-          //     .data()
-          //     .relatives.find((x) => x.toUser.toString() == userID.toString());
-          //   console.log('relat   2222222', relat);
-          //   if (relat == null) {
-          //     setRelativeStatus("NOT_FOUND");
-          //   } else {
-          //     setRelativeStatus(relat);
-          //   }
-          // }
-          //  setRelatives(documentSnapshot.data().relatives);
+          let relat = documentSnapshot.data().relatives.filter(
+            (x) => x.toUser == userID,
+          )[0].status;
+          console.log('relat  219 ', relat);
+          if (relat == null) {
+            setRelativeStatus("NOT_FOUND");
+          } else {
+            setRelativeStatus(relat);
+          }
         }
       });
   };

@@ -109,11 +109,13 @@ const AddPostScreen = ({navigation,route,state}) => {
     }
   };
   useEffect(() => {
+    fetchDiseases();
+  },[]);
+  useEffect(() => {
     setLoading(true)
     setPost(postParam);
-    fetchDiseases();
      navigation.addListener("focus", () => setLoading(!loading));
-   },[]);
+   },[navigation]);
 
  const updateDiagnosisLabel = (value) =>{
    try{
@@ -266,20 +268,20 @@ onChangeValue={(value) => {
           </StatusWrapper>
         ) : (
           <SubmitBtn onPress={submitPost}>
-            <SubmitBtnText>Post</SubmitBtnText>
+            <SubmitBtnText>حفظ</SubmitBtnText>
           </SubmitBtn>
         )}
  
       <ActionButton buttonColor="#2e64e5"  zIndex={2000} >
         <ActionButton.Item
           buttonColor="#9b59b6"
-          title="Take Photo"
+          title="تصوير من الكميرا"
           onPress={takePhotoFromCamera}>
           <Icon name="camera-outline" style={styles.actionButtonIcon} />
         </ActionButton.Item>
         <ActionButton.Item
           buttonColor="#3498db"
-          title="Choose Photo"
+          title="اختر من المكتبة"
           onPress={choosePhotoFromLibrary}>
           <Icon name="md-images-outline" style={styles.actionButtonIcon} />
         </ActionButton.Item>

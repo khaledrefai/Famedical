@@ -43,6 +43,7 @@ export const AuthProvider = ({children}) => {
                   createdAt: createdAt=null?firestore.Timestamp.fromDate(new Date()):createdAt,
                   userImg: null,
                   relatives:[],
+                  keywords:[auth().currentUser.email]
               },{merge:true})
               //ensure we catch any errors at this stage to advise us if something does go wrong
               .catch(error => {
@@ -118,6 +119,8 @@ export const AuthProvider = ({children}) => {
                   email: email,
                   createdAt: firestore.Timestamp.fromDate(new Date()),
                   userImg: null,
+                  relatives :[],
+                  keywords:[email]
               } )
               //ensure we catch any errors at this stage to advise us if something does go wrong
               .catch(error => {

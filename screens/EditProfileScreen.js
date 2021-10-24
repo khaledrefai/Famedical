@@ -30,7 +30,7 @@ const EditProfileScreen = () => {
   const [uploading, setUploading] = useState(false);
   const [transferred, setTransferred] = useState(0);
   const [userData, setUserData] = useState(null);
-
+  const [keywords, setKeywords] = useState([]);
   const getUser = async() => {
     const currentUser = await firestore()
     .collection('users')
@@ -40,6 +40,7 @@ const EditProfileScreen = () => {
       if( documentSnapshot.exists ) {
         console.log('User Data', documentSnapshot.data());
         setUserData(documentSnapshot.data());
+        setKeywords(documentSnapshot.data().keywords)
       }
     })
     console.log('getser',user.uid);
@@ -51,7 +52,7 @@ const EditProfileScreen = () => {
     if( imgUrl == null && userData.userImg ) {
       imgUrl = userData.userImg;
     }
-
+    keywords.push(fname,lname,phone);
     firestore()
     .collection('users')
     .doc(user.uid)
@@ -63,6 +64,7 @@ const EditProfileScreen = () => {
       country: userData.country,
       city: userData.city,
       userImg: imgUrl,
+      keywords:keywords
     })
     .then(() => {
       console.log('User Updated!');
