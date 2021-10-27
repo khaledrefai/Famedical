@@ -24,6 +24,7 @@ import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
 
 
+
 const EditProfileScreen = () => {
   const {user, logout} = useContext(AuthContext);
   const [image, setImage] = useState(null);
@@ -31,6 +32,10 @@ const EditProfileScreen = () => {
   const [transferred, setTransferred] = useState(0);
   const [userData, setUserData] = useState(null);
   const [keywords, setKeywords] = useState([]);
+  console.log(RNLocalize.getCountry());
+
+ 
+ 
   const getUser = async() => {
     const currentUser = await firestore()
     .collection('users')
@@ -52,7 +57,8 @@ const EditProfileScreen = () => {
     if( imgUrl == null && userData.userImg ) {
       imgUrl = userData.userImg;
     }
-    keywords.push(fname,lname,phone);
+    keywords =[] ;
+       keywords.push(userData.fname,userData.lname,userData.phone,userData.email);
     firestore()
     .collection('users')
     .doc(user.uid)

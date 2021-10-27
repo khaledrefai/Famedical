@@ -44,7 +44,11 @@ export const PostTime = styled.Text`
     font-family: 'Lato-Regular';
     color: #666;
 `;
-
+export const RelationName =styled.Text`
+    font-size: 12px;
+    font-family: 'Lato-Regular';
+    color: #666;
+`;
 export const PostText = styled.Text`
     font-size: 14px;
     font-family: 'Lato-Regular';

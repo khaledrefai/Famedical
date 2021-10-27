@@ -4,6 +4,8 @@ import FormInput from '../components/FormInput';
 import FormButton from '../components/FormButton';
 import SocialButton from '../components/SocialButton';
 import {AuthContext} from '../navigation/AuthProvider';
+import { useValidation } from 'react-native-form-validator';
+
 
 const SignupScreen = ({navigation}) => {
   const [email, setEmail] = useState();
@@ -11,6 +13,21 @@ const SignupScreen = ({navigation}) => {
   const [confirmPassword, setConfirmPassword] = useState();
 
   const {register} = useContext(AuthContext);
+
+  const { validate, isFieldInError, getErrorsInField, getErrorMessages  } = useValidation({
+    state: { email , password ,confirmPassword },
+    //messages: customValidationMessages,
+  });
+  const _onPressButton = (email,pass) => {
+    validate({
+      email: { email: true },
+      confirmPassword: { equalPassword: password },
+    });
+    if(validate){
+      register(email , pass)
+    }
+  };
+
 
   return (
     <View style={styles.container}>
@@ -25,7 +42,10 @@ const SignupScreen = ({navigation}) => {
         autoCapitalize="none"
         autoCorrect={false}
       />
-
+   {isFieldInError('email') &&
+        getErrorsInField('email').map(errorMessage => (
+          <Text>{errorMessage}</Text>
+        ))}
       <FormInput
         labelValue={password}
         onChangeText={(userPassword) => setPassword(userPassword)}
@@ -41,13 +61,16 @@ const SignupScreen = ({navigation}) => {
         iconType="lock"
         secureTextEntry={true}
       />
-
+   {isFieldInError('confirmPassword') &&
+        getErrorsInField('confirmPassword').map(errorMessage => (
+          <Text>{errorMessage}</Text>
+        ))}
       <FormButton
-        buttonTitle="Sign Up"
-        onPress={() => register(email, password)}
+        buttonTitle=" تسجيل  "
+        onPress={() => _onPressButton(email, password)}
       />
 
-      <View style={styles.textPrivate}>
+      {/* <View style={styles.textPrivate}>
         <Text style={styles.color_textPrivate}>
           By registering, you confirm that you accept our{' '}
         </Text>
@@ -60,7 +83,7 @@ const SignupScreen = ({navigation}) => {
         <Text style={[styles.color_textPrivate, {color: '#e88832'}]}>
           Privacy Policy
         </Text>
-      </View>
+      </View> */}
 
       {Platform.OS === 'android' ? (
         <View>
@@ -73,7 +96,7 @@ const SignupScreen = ({navigation}) => {
           /> */}
     
           <SocialButton
-            buttonTitle="Sign Up with Google"
+            buttonTitle="التسجيل باسخدام جوجل"
             btnType="google"
             color="#de4d41"
             backgroundColor="#f5e7ea"
@@ -85,7 +108,7 @@ const SignupScreen = ({navigation}) => {
       <TouchableOpacity
         style={styles.navButton}
         onPress={() => navigation.navigate('Login')}>
-        <Text style={styles.navButtonText}>Have an account? Sign In</Text>
+        <Text style={styles.navButtonText}>هل لديك حساب ؟ قم بتسجيل الدخول</Text>
       </TouchableOpacity>
     </View>
   );
@@ -127,5 +150,11 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     fontFamily: 'Lato-Regular',
     color: 'grey',
+  },
+  color_error: {
+    fontSize: 15,
+    fontWeight: '400',
+    fontFamily: 'Lato-Regular',
+    color: 'red',
   },
 });

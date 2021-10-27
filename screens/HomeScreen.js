@@ -95,7 +95,7 @@ const HomeScreen = ({navigation}) => {
   const [posts, setPosts] = useState(null);
   const [loading, setLoading] = useState(true);
   const [deleted, setDeleted] = useState(false);
-
+  const[relUserMap,setRelUserMap]= useState([]);
   const fetchPosts = async () => {
     try {
       await firestore()
@@ -106,11 +106,15 @@ const HomeScreen = ({navigation}) => {
         if (documentSnapshot.exists) {
            console.log('getLoginUserData Data relatives', documentSnapshot.data().relatives);
           const relUsers =[""]
+          const relUserMapl=[""]
           documentSnapshot.data().relatives.forEach((rel)=>{
-            if(rel.status == "CONNECTED")
-                 relUsers.push(rel.toUser) ; 
+            if(rel.status == "CONNECTED"){
+                 relUsers.push(rel.toUser) ;
+                  relUserMapl.push({toUSer : rel.toUser,relationName : rel.relationName})    
+            }
           });
-          console.log('relUsers             ', relUsers);
+          setRelUserMap(relUserMapl);
+          console.log('relUsers             ', relUserMapl);
 
           const list = [];
 
@@ -285,7 +289,9 @@ const HomeScreen = ({navigation}) => {
       ) : (
         <ScrollView>
              {posts.map((item) => (
-          <PostCard key={item.id} item={item} onDelete={handleDelete}  navigation={navigation}  />
+          <PostCard key={item.id} item={item} onDelete={handleDelete}  navigation={navigation} 
+          relationName={relUserMap.filter((r)=> r.toUSer==item.userId)[0].relationName } 
+      />
         ))}
        
         </ScrollView>

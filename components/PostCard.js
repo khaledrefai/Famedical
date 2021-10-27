@@ -1,7 +1,7 @@
 import React, {useContext, useEffect, useState} from 'react';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
-import {
+import {RelationName,
   Container,
   Card,
   UserInfo,
@@ -25,7 +25,7 @@ import moment from 'moment/min/moment-with-locales';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import firestore from '@react-native-firebase/firestore';
 
-const PostCard = ({ navigation, item, onDelete, onPress}) => {
+const PostCard = ({ navigation, item, onDelete, relationName}) => {
   moment.locale('ar');
 
   const {user, logout} = useContext(AuthContext);
@@ -59,6 +59,7 @@ const PostCard = ({ navigation, item, onDelete, onPress}) => {
               : 'https://lh5.googleusercontent.com/-b0PKyNuQv5s/AAAAAAAAAAI/AAAAAAAAAAA/AMZuuclxAM4M1SCBGAO7Rp-QP6zgBEUkOQ/s96-c/photo.jpg',
           }}
         />
+         
         <UserInfoText>
           <TouchableOpacity   onPress={() => {
                   navigation.navigate('HomeProfile',{
@@ -70,10 +71,14 @@ const PostCard = ({ navigation, item, onDelete, onPress}) => {
               {userData ? userData.lname || 'No Data' : 'no Data'}
             </UserName>
           </TouchableOpacity>
-          <PostTime>{moment(item.diagnosisDate.toDate()).fromNow()}</PostTime>
+         
+          <RelationName>{relationName}</RelationName>
         </UserInfoText>
+       
       </UserInfo>
-      <PostText>  {item.diagnosis.label} </PostText>
+      <PostText>  {item.diagnosis.label}     {' '}
+      <PostTime>{moment(item.diagnosisDate.toDate()).fromNow()}</PostTime>
+      </PostText>
        {/* {item.postImg != null ? <PostImg source={{uri: item.postImg}} /> : <Divider />} */}
       {item.postImg != null ? (
         <ProgressiveImage

@@ -25,7 +25,7 @@ const Skip = ({...props}) => (
         style={{marginHorizontal:10}}
         {...props}
     >
-        <Text style={{fontSize:16}}>Skip</Text>
+        <Text style={{fontSize:16}}>تخطي</Text>
     </TouchableOpacity>
 );
 
@@ -34,7 +34,7 @@ const Next = ({...props}) => (
         style={{marginHorizontal:10}}
         {...props}
     >
-        <Text style={{fontSize:16}}>Next</Text>
+        <Text style={{fontSize:16}}>التالي</Text>
     </TouchableOpacity>
 );
 
@@ -43,7 +43,7 @@ const Done = ({...props}) => (
         style={{marginHorizontal:10}}
         {...props}
     >
-        <Text style={{fontSize:16}}>Done</Text>
+        <Text style={{fontSize:16}}>تم</Text>
     </TouchableOpacity>
 );
 
@@ -59,21 +59,21 @@ const OnboardingScreen = ({navigation}) => {
         pages={[
           {
             backgroundColor: '#a6e4d0',
-            image: <Image source={require('../assets/onboarding-img1.png')} />,
-            title: 'Connect to the World',
-            subtitle: 'A New Way To Connect With The World',
+            image: <Image source={require('../assets/onboarding-img1-n.png')} />,
+            title: 'تاريخك الطبي',
+            subtitle: 'قم بتسجيل كافة الامراض التي تم تشخيصك بها',
           },
           {
             backgroundColor: '#fdeb93',
-            image: <Image source={require('../assets/onboarding-img2.png')} />,
-            title: 'Share Your Favorites',
-            subtitle: 'Share Your Thoughts With Similar Kind of People',
+            image: <Image source={require('../assets/onboarding-img2-n.png')} />,
+            title: 'تواصل مع العائلة',
+            subtitle: 'تواصل مع افراد العائلة حول العالم ليقومو بالتسجيل ايضا',
           },
           {
             backgroundColor: '#e9bcbe',
-            image: <Image source={require('../assets/onboarding-img3.png')} />,
-            title: 'Become The Star',
-            subtitle: "Let The Spot Light Capture You",
+            image: <Image source={require('../assets/onboarding-img3-n.png')} />,
+            title: 'نصائح طبية',
+            subtitle: "احصل على تحذيرات للامراض التي من الممكن ان تصاب بها ونصائح لتجنب الاصابة",
           },
         ]}
       />

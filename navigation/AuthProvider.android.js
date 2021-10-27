@@ -3,12 +3,13 @@ import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import { GoogleSignin } from '@react-native-community/google-signin';
 import { LoginManager, AccessToken } from 'react-native-fbsdk';
+import * as RNLocalize from "react-native-localize";
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({children}) => {
   const [user, setUser] = useState(null);
-
+  console.log(RNLocalize.getCountry());
   return (
     <AuthContext.Provider
       value={{
@@ -43,6 +44,7 @@ export const AuthProvider = ({children}) => {
                   createdAt: createdAt=null?firestore.Timestamp.fromDate(new Date()):createdAt,
                   userImg: null,
                   relatives:[],
+                  country : RNLocalize.getCountry(),
                   keywords:[auth().currentUser.email]
               },{merge:true})
               //ensure we catch any errors at this stage to advise us if something does go wrong
@@ -120,6 +122,7 @@ export const AuthProvider = ({children}) => {
                   createdAt: firestore.Timestamp.fromDate(new Date()),
                   userImg: null,
                   relatives :[],
+                  country : RNLocalize.getCountry(),
                   keywords:[email]
               } )
               //ensure we catch any errors at this stage to advise us if something does go wrong

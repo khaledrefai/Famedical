@@ -25,7 +25,7 @@ const LoginScreen = ({navigation}) => {
         source={require('../assets/rn-social-logo.png')}
         style={styles.logo}
       />
-      <Text style={styles.text}>RN Social App</Text>
+      <Text style={styles.text}>FaMedical Hisory App</Text>
 
       <FormInput
         labelValue={email}
@@ -49,10 +49,10 @@ const LoginScreen = ({navigation}) => {
         buttonTitle="Sign In"
         onPress={() => login(email, password)}
       />
-
+{/* 
       <TouchableOpacity style={styles.forgotButton} onPress={() => {}}>
         <Text style={styles.navButtonText}>Forgot Password?</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
 
       {Platform.OS === 'android' ? (
         <View>
@@ -65,7 +65,7 @@ const LoginScreen = ({navigation}) => {
           /> */}
  
           <SocialButton
-            buttonTitle="Sign In with Google"
+            buttonTitle="الدخول باستخدام جوجل"
             btnType="google"
             color="#de4d41"
             backgroundColor="#f5e7ea"
@@ -78,7 +78,7 @@ const LoginScreen = ({navigation}) => {
         style={styles.forgotButton}
         onPress={() => navigation.navigate('Signup')}>
         <Text style={styles.navButtonText}>
-          Don't have an acount? Create here
+          انشاء حساب جديد
         </Text>
       </TouchableOpacity>
     </ScrollView>

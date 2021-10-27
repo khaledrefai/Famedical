@@ -240,8 +240,9 @@ const FamilyScreen = ({navigation, route}) => {
                       </UserInfoText>
                       <MessageText>
                         <Text>
+                          
+                          تم ارسال الطلب 
                           {' '}
-                          تم ارسال الطلب -
                           {moment(item.requestDate.toDate()).fromNow()}
                         </Text>
                       </MessageText>
@@ -275,7 +276,7 @@ const FamilyScreen = ({navigation, route}) => {
                         <PostTime>{item.relationName}</PostTime>
                       </UserInfoText>
                       <Text>
-                        متصلون -{moment(item.requestDate.toDate()).fromNow()}
+                        متصلون {' '}{moment(item.requestDate.toDate()).fromNow()}
                       </Text>
                     </TextSection>
                   </UserInfo>
