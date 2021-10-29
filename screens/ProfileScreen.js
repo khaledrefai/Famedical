@@ -167,9 +167,9 @@ fetchPosts();
             list.push({
               id: doc.id,
               userId,
-              userName: 'Test Name',
+              userName: 'لا يوجد بيانات',
               userImg:
-                'https://lh5.googleusercontent.com/-b0PKyNuQv5s/AAAAAAAAAAI/AAAAAAAAAAA/AMZuuclxAM4M1SCBGAO7Rp-QP6zgBEUkOQ/s96-c/photo.jpg',
+              require('../assets/avatar.png'),
               postTime: postTime,
               diagnosis,
               postImg,
@@ -354,24 +354,18 @@ fetchPosts();
           showsVerticalScrollIndicator={false}>
           <Image
             style={styles.userImg}
-            source={{
-              uri: userData
-                ? userData.userImg ||
-                  'https://lh5.googleusercontent.com/-b0PKyNuQv5s/AAAAAAAAAAI/AAAAAAAAAAA/AMZuuclxAM4M1SCBGAO7Rp-QP6zgBEUkOQ/s96-c/photo.jpg'
-                : 'https://lh5.googleusercontent.com/-b0PKyNuQv5s/AAAAAAAAAAI/AAAAAAAAAAA/AMZuuclxAM4M1SCBGAO7Rp-QP6zgBEUkOQ/s96-c/photo.jpg',
-            }}
+            source={  userData.userImg?{uri: userData.userImg }: require('../assets/avatar.png') }
           />
 
           <Text style={styles.userName}>
-            {userData ? userData.fname || 'Test' : 'Test'}
-            {userData ? userData.lname || 'User' : 'User'}
+            {userData ? userData.fname || 'لا يوجد اسم' : 'لا يوجد اسم'}
+            {userData ? userData.lname || '' : ''}
           </Text>
           {/* <Text>{route.params ? route.params.userId : user.uid}</Text> */}
           <Text style={styles.aboutUser}>
-            {userData ? userData.about || 'No details added.' : ''}
+            {userData ? userData.about || 'لا توجد معلومات' : ''}
       
            </Text>
-          <Divider />
 
           {userID != user.uid ? (
             relativeStatus == "NOT_FOUND" ? (

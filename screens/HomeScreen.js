@@ -1,5 +1,5 @@
 import React, {useEffect, useState,useContext} from 'react';
-import {
+import {Image,
   View,
   ScrollView,
   Text,
@@ -96,6 +96,7 @@ const HomeScreen = ({navigation}) => {
   const [loading, setLoading] = useState(true);
   const [deleted, setDeleted] = useState(false);
   const[relUserMap,setRelUserMap]= useState([]);
+  const[msg,setMsg] = useState("");
   const fetchPosts = async () => {
     try {
       await firestore()
@@ -105,6 +106,7 @@ const HomeScreen = ({navigation}) => {
       .then((documentSnapshot) => {
         if (documentSnapshot.exists) {
            console.log('getLoginUserData Data relatives', documentSnapshot.data().relatives);
+           if(documentSnapshot.data().relatives){
           const relUsers =[""]
           const relUserMapl=[""]
           documentSnapshot.data().relatives.forEach((rel)=>{
@@ -154,7 +156,17 @@ const HomeScreen = ({navigation}) => {
 
             });
     
-        
+          }else{
+            setMsg( "قم بالبحث عن الاقارب واضافتهم عن طريق الضغط على رابط العائلة في الاسفل ");
+            if (loading) {
+              setLoading(false);
+            }
+          }
+        }else{
+          setMsg( "قم بالبحث عن الاقارب واضافتهم عن طريق الضغط على رابط العائلة في الأسفل ");
+          if (loading) {
+            setLoading(false);
+          }
         }
       });
      
@@ -286,7 +298,7 @@ const HomeScreen = ({navigation}) => {
             </View>
           </SkeletonPlaceholder>
         </ScrollView>
-      ) : (
+      ) : ( posts?(
         <ScrollView>
              {posts.map((item) => (
           <PostCard key={item.id} item={item} onDelete={handleDelete}  navigation={navigation} 
@@ -295,9 +307,40 @@ const HomeScreen = ({navigation}) => {
         ))}
        
         </ScrollView>
-      )}
+  ):(
+     <Container  style={styles.container}>
+    <Image
+        source={require('../assets/rn-social-logo.png')}
+        style={styles.logo}
+      />
+    <Text  style={styles.baseText}> {msg}</Text>
+    </Container>
+  ))}
     </SafeAreaView>
   );
 };
 
 export default HomeScreen;
+const styles = StyleSheet.create({
+  container: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    paddingTop: 50
+  },
+  baseText: {
+    fontFamily: "Cochin",
+    fontSize: 30,
+    color: '#78aa37',
+    textAlign :'center'
+  },
+  titleText: {
+    fontSize: 20,
+    fontWeight: "bold"
+  },
+  logo: {
+    height: 300,
+    width: 300,
+    resizeMode: 'cover',
+  }
+});

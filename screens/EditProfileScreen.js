@@ -22,74 +22,97 @@ import ImagePicker from 'react-native-image-crop-picker';
 import {AuthContext} from '../navigation/AuthProvider';
 import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
+import CountryPicker, {
+  getAllCountries,
+} from 'react-native-country-picker-modal';
 
-
-
-const EditProfileScreen = () => {
+const EditProfileScreen = ({navigation}) => {
   const {user, logout} = useContext(AuthContext);
   const [image, setImage] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [transferred, setTransferred] = useState(0);
   const [userData, setUserData] = useState(null);
-  const [keywords, setKeywords] = useState([]);
-  console.log(RNLocalize.getCountry());
 
- 
- 
-  const getUser = async() => {
+  const [nationality, setNationality] = useState();
+  const [country, setCountry] = useState(null);
+
+  const [countryCodePhone, setCountryCodePhone] = useState();
+  const [callingCode, setCallingCode] = useState();
+  const onSelect = (country) => {
+    console.log('country*========', country);
+    setNationality(country.cca2);
+    setCountry(country);
+  };
+  const onSelectPhone = (country) => {
+    console.log('country    phone*========', country);
+    setCountryCodePhone(country.cca2);
+    setCallingCode(country.callingCode);
+     
+  };
+  const getUser = async () => {
     const currentUser = await firestore()
-    .collection('users')
-    .doc(user.uid)
-    .get()
-    .then((documentSnapshot) => {
-      if( documentSnapshot.exists ) {
-        console.log('User Data', documentSnapshot.data());
-        setUserData(documentSnapshot.data());
-        setKeywords(documentSnapshot.data().keywords)
-      }
-    })
-    console.log('getser',user.uid);
-  }
+      .collection('users')
+      .doc(user.uid)
+      .get()
+      .then((documentSnapshot) => {
+        if (documentSnapshot.exists) {
+          console.log('User Data', documentSnapshot.data());
+          setUserData(documentSnapshot.data());
+          setNationality(documentSnapshot.data().nationality?
+          documentSnapshot.data().nationality :
+          documentSnapshot.data().countryCode);
+          setCountryCodePhone(documentSnapshot.data().countryCodePhone?
+          documentSnapshot.data().countryCodePhone:
+          documentSnapshot.data().countryCode)
+        }
+      });
+    console.log('getser', user.uid);
+  };
 
-  const handleUpdate = async() => {
+  const handleUpdate = async () => {
     let imgUrl = await uploadImage();
 
-    if( imgUrl == null && userData.userImg ) {
+    if (imgUrl == null && userData.userImg) {
       imgUrl = userData.userImg;
     }
-    keywords =[] ;
-       keywords.push(userData.fname,userData.lname,userData.phone,userData.email);
+   let  keywords = [];
+    keywords.push(
+      userData.fname,
+      userData.lname,
+      userData.phone,
+     '0'|| userData.phone,
+     callingCode || userData.phone,
+      userData.email,
+    );
     firestore()
-    .collection('users')
-    .doc(user.uid)
-    .update({
-      fname: userData.fname,
-      lname: userData.lname,
-      about: userData.about,
-      phone: userData.phone,
-      country: userData.country,
-      city: userData.city,
-      userImg: imgUrl,
-      keywords:keywords
-    })
-    .then(() => {
-      console.log('User Updated!');
-      Alert.alert(
-        'Profile Updated!',
-        'Your profile has been updated successfully.'
-      );
-    })
-  }
+      .collection('users')
+      .doc(user.uid)
+      .update({
+        fname: userData.fname,
+        lname: userData.lname,
+        about: userData.about,
+        phone: userData.phone,
+        nationality: nationality,
+        countryCodePhone : countryCodePhone,
+        userImg: imgUrl,
+        keywords: keywords,
+      })
+      .then(() => {
+        console.log('User Updated!');
+        Alert.alert("تم الحفظ");
+        navigation.navigate('HomeProfile')
+      });
+  };
 
   const uploadImage = async () => {
-    if( image == null ) {
+    if (image == null) {
       return null;
     }
     const uploadUri = image;
     let filename = uploadUri.substring(uploadUri.lastIndexOf('/') + 1);
 
     // Add timestamp to File Name
-    const extension = filename.split('.').pop(); 
+    const extension = filename.split('.').pop();
     const name = filename.split('.').slice(0, -1).join('.');
     filename = name + Date.now() + '.' + extension;
 
@@ -123,13 +146,12 @@ const EditProfileScreen = () => {
       //   'Image uploaded!',
       //   'Your image has been uploaded to the Firebase Cloud Storage Successfully!',
       // );
+      
       return url;
-
     } catch (e) {
       console.log(e);
       return null;
     }
-
   };
 
   useEffect(() => {
@@ -167,23 +189,23 @@ const EditProfileScreen = () => {
   renderInner = () => (
     <View style={styles.panel}>
       <View style={{alignItems: 'center'}}>
-        <Text style={styles.panelTitle}>Upload Photo</Text>
-        <Text style={styles.panelSubtitle}>Choose Your Profile Picture</Text>
+        <Text style={styles.panelTitle}> تحميل صورة </Text>
+        <Text style={styles.panelSubtitle}>اختر صورة شخصية </Text>
       </View>
       <TouchableOpacity
         style={styles.panelButton}
         onPress={takePhotoFromCamera}>
-        <Text style={styles.panelButtonTitle}>Take Photo</Text>
+        <Text style={styles.panelButtonTitle}> الكميرا </Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.panelButton}
         onPress={choosePhotoFromLibrary}>
-        <Text style={styles.panelButtonTitle}>Choose From Library</Text>
+        <Text style={styles.panelButtonTitle}> مكتبة الصور </Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.panelButton}
         onPress={() => this.bs.current.snapTo(1)}>
-        <Text style={styles.panelButtonTitle}>Cancel</Text>
+        <Text style={styles.panelButtonTitle}>الغاء</Text>
       </TouchableOpacity>
     </View>
   );
@@ -226,14 +248,13 @@ const EditProfileScreen = () => {
                 alignItems: 'center',
               }}>
               <ImageBackground
-                source={{
-                  uri: image
-                    ? image
-                    : userData
-                    ? userData.userImg ||
-                      'https://lh5.googleusercontent.com/-b0PKyNuQv5s/AAAAAAAAAAI/AAAAAAAAAAA/AMZuuclxAM4M1SCBGAO7Rp-QP6zgBEUkOQ/s96-c/photo.jpg'
-                    : 'https://lh5.googleusercontent.com/-b0PKyNuQv5s/AAAAAAAAAAI/AAAAAAAAAAA/AMZuuclxAM4M1SCBGAO7Rp-QP6zgBEUkOQ/s96-c/photo.jpg',
-                }}
+                source={
+                  userData
+                    ? userData.userImg
+                      ? {uri: userData.userImg}
+                      : require('../assets/avatar.png')
+                    : require('../assets/avatar.png')
+                }
                 style={{height: 100, width: 100}}
                 imageStyle={{borderRadius: 15}}>
                 <View
@@ -268,7 +289,7 @@ const EditProfileScreen = () => {
         <View style={styles.action}>
           <FontAwesome name="user-o" color="#333333" size={20} />
           <TextInput
-            placeholder="First Name"
+            placeholder=" الاسم الأول  "
             placeholderTextColor="#666666"
             autoCorrect={false}
             value={userData ? userData.fname : ''}
@@ -279,7 +300,7 @@ const EditProfileScreen = () => {
         <View style={styles.action}>
           <FontAwesome name="user-o" color="#333333" size={20} />
           <TextInput
-            placeholder="Last Name"
+            placeholder="  اسم العائلة "
             placeholderTextColor="#666666"
             value={userData ? userData.lname : ''}
             onChangeText={(txt) => setUserData({...userData, lname: txt})}
@@ -292,7 +313,7 @@ const EditProfileScreen = () => {
           <TextInput
             multiline
             numberOfLines={3}
-            placeholder="About Me"
+            placeholder=" معلومات عني   "
             placeholderTextColor="#666666"
             value={userData ? userData.about : ''}
             onChangeText={(txt) => setUserData({...userData, about: txt})}
@@ -300,8 +321,39 @@ const EditProfileScreen = () => {
             style={[styles.textInput, {height: 40}]}
           />
         </View>
+
+        <View style={styles.action}>
+          <CountryPicker
+            countryCode={nationality ? nationality : 'AE'}
+            withFilter={true}
+            withAlphaFilter={true}
+            withCallingCode={false}
+            withCountryNameButton={true}
+            withEmoji={true}
+            onSelect={onSelect}
+          />
+          <Text style={styles.textLable}>الجنسية</Text>
+          {/* <TextInput
+            placeholder="Country"
+            placeholderTextColor="#666666"
+            autoCorrect={false}
+            value={userData ? userData.country : ''}
+            onChangeText={(txt) => setUserData({...userData, country: txt})}
+            style={styles.textInput}
+          /> */}
+        </View>
+
         <View style={styles.action}>
           <Feather name="phone" color="#333333" size={20} />
+          <CountryPicker
+            countryCode={countryCodePhone ? countryCodePhone : 'AE'}
+            withFilter={true}
+            withAlphaFilter={true}
+            withCallingCode={true}
+            withCountryNameButton={false}
+            withCallingCodeButton={true}
+            onSelect={onSelectPhone}
+          />
           <TextInput
             placeholder="Phone"
             placeholderTextColor="#666666"
@@ -313,33 +365,8 @@ const EditProfileScreen = () => {
           />
         </View>
 
-        <View style={styles.action}>
-          <FontAwesome name="globe" color="#333333" size={20} />
-          <TextInput
-            placeholder="Country"
-            placeholderTextColor="#666666"
-            autoCorrect={false}
-            value={userData ? userData.country : ''}
-            onChangeText={(txt) => setUserData({...userData, country: txt})}
-            style={styles.textInput}
-          />
-        </View>
-        <View style={styles.action}>
-          <MaterialCommunityIcons
-            name="map-marker-outline"
-            color="#333333"
-            size={20}
-          />
-          <TextInput
-            placeholder="City"
-            placeholderTextColor="#666666"
-            autoCorrect={false}
-            value={userData ? userData.city : ''}
-            onChangeText={(txt) => setUserData({...userData, city: txt})}
-            style={styles.textInput}
-          />
-        </View>
-        <FormButton buttonTitle="Update" onPress={handleUpdate} />
+        
+        <FormButton buttonTitle="حفظ" onPress={handleUpdate} />
       </Animated.View>
     </View>
   );
@@ -423,9 +450,17 @@ const styles = StyleSheet.create({
     paddingBottom: 5,
   },
   textInput: {
+    textAlign: 'right',
     flex: 1,
     marginTop: Platform.OS === 'ios' ? 0 : -12,
     paddingLeft: 10,
     color: '#333333',
+  },
+  textLable: {
+    textAlign: 'right',
+    flex: 1,
+    marginTop: Platform.OS === 'ios' ? 0 : -12,
+    paddingLeft: 10,
+    color: '#666666',
   },
 });

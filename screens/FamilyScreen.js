@@ -42,7 +42,7 @@ import {
 import styles from '../styles/Common';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-const FamilyScreen = ({navigation, route}) => {
+const FamilyScreen = ({navigation}) => {
   moment.locale('ar');
 
   const {user, logout} = useContext(AuthContext);
@@ -146,12 +146,12 @@ const FamilyScreen = ({navigation, route}) => {
         if (documentSnapshot.exists) {
           console.log('User Data', documentSnapshot.data());
           setUserData(documentSnapshot.data());
-          console.log(
-            'User relaive ',
-            documentSnapshot
-              .data()
-              .relatives.filter((r) => r.status != 'PEDING'),
-          );
+          
+          // console.log(
+          //   'User relaive ',
+          //   documentSnapshot
+          //     .data().relatives.filter((r) => r.status != 'PEDING'),
+          // );
 
           if (loading) {
             setLoading(false);
@@ -172,6 +172,7 @@ const FamilyScreen = ({navigation, route}) => {
         {loading || userData == null ? (
           <Image source={require('../assets/loading.gif')} />
         ) : (
+        userData.relatives?(
           <React.Fragment>
             <FlatList
               data={userData.relatives.filter((r) => r.status == 'PENDING')}
@@ -284,7 +285,9 @@ const FamilyScreen = ({navigation, route}) => {
               )}
             />
           </React.Fragment>
-        )}
+          ):(<></>)
+       
+       )}
         {open ? (
           <DropDownPicker
             searchPlaceholder="ابحث باستخدام الاسم ,الايميل او رقم الهاتف"
@@ -332,8 +335,7 @@ const FamilyScreen = ({navigation, route}) => {
                         icon: () => (
                           <Image
                             source={
-                              userImg
-                                ? userImg
+                              userImg?{uri: userImg }
                                 : require('../assets/avatar.png')
                             }
                             style={styles.userIcon}
@@ -356,7 +358,7 @@ const FamilyScreen = ({navigation, route}) => {
         )}
       </Center>
       <ActionButton
-        buttonColor="#2e64e5"
+        buttonColor="#78aa37"
         renderIcon={(active) => (
           <Icon name="search" style={styles.actionButtonIcon} />
         )}

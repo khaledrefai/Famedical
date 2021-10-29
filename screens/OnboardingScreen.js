@@ -59,19 +59,19 @@ const OnboardingScreen = ({navigation}) => {
         pages={[
           {
             backgroundColor: '#a6e4d0',
-            image: <Image source={require('../assets/onboarding-img1-n.png')} />,
+            image: <Image source={require('../assets/onboarding-img1-n.png')}     resizeMode='center' style={styles.image}  />,
             title: 'تاريخك الطبي',
             subtitle: 'قم بتسجيل كافة الامراض التي تم تشخيصك بها',
           },
           {
             backgroundColor: '#fdeb93',
-            image: <Image source={require('../assets/onboarding-img2-n.png')} />,
+            image: <Image source={require('../assets/onboarding-img2-n.png')} resizeMode='center' styles/>,
             title: 'تواصل مع العائلة',
             subtitle: 'تواصل مع افراد العائلة حول العالم ليقومو بالتسجيل ايضا',
           },
           {
             backgroundColor: '#e9bcbe',
-            image: <Image source={require('../assets/onboarding-img3-n.png')} />,
+            image: <Image source={require('../assets/onboarding-img3-n.png')} resizeMode='center' styles/>,
             title: 'نصائح طبية',
             subtitle: "احصل على تحذيرات للامراض التي من الممكن ان تصاب بها ونصائح لتجنب الاصابة",
           },
@@ -87,5 +87,11 @@ const styles = StyleSheet.create({
     flex: 1, 
     alignItems: 'center', 
     justifyContent: 'center'
+  },
+  image: {
+    flex: 1, 
+    alignItems: 'center', 
+    justifyContent: 'center',
+    width : '500',
   },
 });

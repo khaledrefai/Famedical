@@ -9,7 +9,9 @@ export const AuthContext = createContext();
 
 export const AuthProvider = ({children}) => {
   const [user, setUser] = useState(null);
-  console.log(RNLocalize.getCountry());
+  const [country, setCountry] = useState(RNLocalize.getCountry());
+  const [bestLang, setBestLang] = useState(RNLocalize.findBestAvailableLanguage(["en-US", "en", "ar"]));
+  console.log("RNLocalize --------" +RNLocalize.getCountry());
   return (
     <AuthContext.Provider
       value={{
@@ -24,6 +26,7 @@ export const AuthProvider = ({children}) => {
         },
         googleLogin: async () => {
           try {
+            console.log('google login ---------------- ');
             // Get the users ID token
             const { idToken } = await GoogleSignin.signIn();
 
@@ -41,12 +44,10 @@ export const AuthProvider = ({children}) => {
               firestore().collection('users').doc(auth().currentUser.uid)
               .set({
                   email: auth().currentUser.email,
-                  createdAt: createdAt=null?firestore.Timestamp.fromDate(new Date()):createdAt,
-                  userImg: null,
-                  relatives:[],
-                  country : RNLocalize.getCountry(),
-                  keywords:[auth().currentUser.email]
-              },{merge:true})
+                  lastLogin: firestore.Timestamp.fromDate(new Date()),
+                  countryCode : country,
+                  language : bestLang,
+              } ,{merge : true} )
               //ensure we catch any errors at this stage to advise us if something does go wrong
               .catch(error => {
                   console.log('Something went wrong with added user to firestore: ', error);
@@ -119,12 +120,10 @@ export const AuthProvider = ({children}) => {
                   fname: '',
                   lname: '',
                   email: email,
-                  createdAt: firestore.Timestamp.fromDate(new Date()),
-                  userImg: null,
-                  relatives :[],
-                  country : RNLocalize.getCountry(),
-                  keywords:[email]
-              } )
+                 lastLogin: firestore.Timestamp.fromDate(new Date()),
+                 countryCode : country,
+                 language : bestLang,
+               } )
               //ensure we catch any errors at this stage to advise us if something does go wrong
               .catch(error => {
                   console.log('Something went wrong with added user to firestore: ', error);

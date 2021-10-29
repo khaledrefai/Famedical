@@ -28,7 +28,7 @@ import {
 import { AuthContext } from '../navigation/AuthProvider';
 import DatePicker from 'react-native-date-picker'
 
-const AddPostScreen = ({navigation,route,state}) => {
+const AddPostScreen = ({navigation,route}) => {
 
   let postParam= null;
   try{

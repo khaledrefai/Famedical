@@ -25,7 +25,7 @@ const LoginScreen = ({navigation}) => {
         source={require('../assets/rn-social-logo.png')}
         style={styles.logo}
       />
-      <Text style={styles.text}>FaMedical Hisory App</Text>
+      <Text style={styles.text}>Family Medical Histroy</Text>
 
       <FormInput
         labelValue={email}
